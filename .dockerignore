@@ -1,0 +1,49 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Terraform files
+*.tfstate
+*.tfstate.backup
+.terraform
+.terraform.lock.hcl
+terraform.tfvars
+
+# Jenkins files (not needed in image)
+jenkins-agent.yaml
+jenkins-ingress.yaml
+jenkins-https.yaml
+Jenkinsfile
+
+# Certificates and keys
+*.pem
+*.key
+*.p12
+*.b64
+keystore.*
+
+# Documentation
+*.md
+README*
+
+# Build scripts
+build-docker-image.sh
+
+# Examples
+examples/
+
+# Python scripts
+*.py
+__pycache__/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+

@@ -26,24 +26,12 @@ agent:
               mountPath: /var/secrets/google
         containers:
           - name: stackgen
-            image: ubuntu:22.04
+            image: gcr.io/leander-test-471809/jenkins-stackgen-runner:latest
             ttyEnabled: true
-            command: |
-              sh -c "
-                # Create jenkins user if it doesn't exist
-                if ! id -u jenkins > /dev/null 2>&1; then
-                  useradd -m -u 1000 -s /bin/bash jenkins || true
-                  mkdir -p /home/jenkins
-                  chown -R jenkins:jenkins /home/jenkins || true
-                  # Install sudo and configure it for jenkins user
-                  apt-get update && apt-get install -y sudo || true
-                  echo 'jenkins ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers || true
-                fi
-                # Switch to jenkins user and keep container running
-                exec su - jenkins -c 'cat'
-              "
+            command: cat
             securityContext:
-              runAsNonRoot: false
+              runAsUser: 1000
+              runAsNonRoot: true
               allowPrivilegeEscalation: false
             envVars:
               - secretEnvVar:
