@@ -37,16 +37,26 @@ RUN useradd -m -s /bin/bash linuxbrew || true
 # Install Homebrew as root (system-wide installation)
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Make Homebrew accessible to all users
-RUN chmod -R 755 /home/linuxbrew/.linuxbrew && \
-    chown -R linuxbrew:linuxbrew /home/linuxbrew/.linuxbrew
+# Verify Homebrew installation and make it accessible
+RUN ls -la /home/linuxbrew/.linuxbrew/bin/brew && \
+    chmod +x /home/linuxbrew/.linuxbrew/bin/brew && \
+    chmod -R 755 /home/linuxbrew/.linuxbrew && \
+    chown -R linuxbrew:linuxbrew /home/linuxbrew/.linuxbrew && \
+    /home/linuxbrew/.linuxbrew/bin/brew --version
 
 # Install StackGen CLI as root
 RUN eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
     brew install stackgenhq/stackgen/stackgen
 
+# Verify stackgen binary exists
+RUN ls -la /home/linuxbrew/.linuxbrew/bin/stackgen && \
+    /home/linuxbrew/.linuxbrew/bin/stackgen version
+
 # Set up PATH for Homebrew (system-wide)
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
+
+# Verify stackgen is accessible via PATH
+RUN which stackgen
 
 # Switch to jenkins user for default operations
 USER jenkins
