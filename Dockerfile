@@ -1,11 +1,16 @@
-FROM ubuntu:22.04
+FROM homebrew/brew:latest
+
+# Switch to root for system operations
+USER root
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV HOMEBREW_NO_AUTO_UPDATE=1
 
-# Create jenkins user
-RUN useradd -m -u 1000 -s /bin/bash jenkins
+# Set PATH to include Homebrew (already set in base image, but ensure it's there)
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
+
+# Check if user 1000 exists, if not create jenkins user
+RUN id 1000 2>/dev/null || useradd -m -u 1000 -s /bin/bash jenkins
 
 # Install system dependencies
 RUN apt-get update && \
@@ -17,6 +22,7 @@ RUN apt-get update && \
     software-properties-common \
     gnupg2 \
     lsb-release \
+    ca-certificates \
     build-essential && \
     rm -rf /var/lib/apt/lists/*
 
@@ -30,33 +36,14 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
     apt-get install -y terraform && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Homebrew system-wide (as root)
-# Create linuxbrew user for Homebrew
-RUN useradd -m -s /bin/bash linuxbrew || true
-
-# Install Homebrew as root (system-wide installation)
-RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Verify Homebrew installation and make it accessible
-RUN ls -la /home/linuxbrew/.linuxbrew/bin/brew && \
-    chmod +x /home/linuxbrew/.linuxbrew/bin/brew && \
-    chmod -R 755 /home/linuxbrew/.linuxbrew && \
-    chown -R linuxbrew:linuxbrew /home/linuxbrew/.linuxbrew && \
-    /home/linuxbrew/.linuxbrew/bin/brew --version
-
-# Install StackGen CLI as root
+# Install StackGen CLI using Homebrew (Homebrew is already installed in base image)
 RUN eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
     brew install stackgenhq/stackgen/stackgen
 
-# Verify stackgen binary exists
-RUN ls -la /home/linuxbrew/.linuxbrew/bin/stackgen && \
-    /home/linuxbrew/.linuxbrew/bin/stackgen version
-
-# Set up PATH for Homebrew (system-wide)
-ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
-
-# Verify stackgen is accessible via PATH
-RUN which stackgen
+# Verify stackgen is accessible
+RUN eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+    which stackgen && \
+    stackgen version
 
 # Switch to jenkins user for default operations
 USER jenkins
