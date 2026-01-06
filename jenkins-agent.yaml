@@ -1,5 +1,4 @@
 controller:
-  # Disable internal HTTPS (handled by Ingress)
   httpsKeyStore:
     enable: false
   ingress:
@@ -22,34 +21,22 @@ agent:
         label: stackgen
         serviceAccount: jenkins
         volumes:
-          - name: google-cloud-key
-            secret:
+          - secretVolume:
               secretName: gcp-sa-key
+              mountPath: /var/secrets/google
         containers:
           - name: stackgen
             image: ubuntu:22.04
-            tty: true
-            command:
-              - "/bin/bash"
-              - "-c"
-              - |
-                apt-get update && \
-                apt-get install -y curl unzip git software-properties-common gnupg2 lsb-release && \
-                curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
-                apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-                apt-get update && apt-get install -y terraform && \
-                cat
-            env:
-              - name: STACKGEN_API_TOKEN
-                valueFrom:
-                  secretKeyRef:
-                    name: stackgen-api-token
-                    key: STACKGEN_API_TOKEN
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /var/secrets/google/key.json
-              - name: DEBIAN_FRONTEND
-                value: noninteractive
-            volumeMounts:
-              - name: google-cloud-key
-                mountPath: /var/secrets/google
-                readOnly: true
+            ttyEnabled: true
+            command: cat
+            envVars:
+              - secretEnvVar:
+                  key: STACKGEN_API_TOKEN
+                  secretName: stackgen-api-token
+                  secretKey: STACKGEN_API_TOKEN
+              - envVar:
+                  key: GOOGLE_APPLICATION_CREDENTIALS
+                  value: /var/secrets/google/key.json
+              - envVar:
+                  key: DEBIAN_FRONTEND
+                  value: noninteractive
