@@ -1,0 +1,16 @@
+controller:
+  # Disable internal HTTPS (handled by Ingress)
+  httpsKeyStore:
+    enable: false
+
+  ingress:
+    enabled: true
+    apiVersion: "networking.k8s.io/v1"
+    hostName: jenkins.34.55.201.151.sslip.io
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tls:
+     - secretName: jenkins-tls
+       hosts:
+         - jenkins.34.55.201.151.sslip.io
