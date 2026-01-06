@@ -27,6 +27,7 @@ agent:
         containers:
           - name: stackgen
             image: gcr.io/leander-test-471809/jenkins-stackgen-runner:latest
+            imagePullPolicy: Always
             ttyEnabled: true
             command: cat
             securityContext:
